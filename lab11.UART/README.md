@@ -13,7 +13,7 @@ Launchpad is connected to.
     - Click open, and now you can communicate with your Launchpad.
     - ***NOTE***: you can use it on Windows as well.
 
-- If you want more a terminal program, follow these steps:
+- If you want a terminal program, follow these steps:
     - Install [`PICOCOM`](https://github.com/npat-efault/picocom)
     - Run `picocom -b <baudrate> /dev/tty<COM_port>`
         - e,g. `picocom -b 115200 /dev/ttyACM0`
