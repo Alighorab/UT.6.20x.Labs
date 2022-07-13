@@ -1,13 +1,13 @@
 #include "tm4c123gh6pm.h"
 #include "UART.h"
 
-void PLL_init(void);
+void PLL_Init(void);
 
 int
 main(void)
 { 
     unsigned long n;
-    PLL_init();
+    PLL_Init();
     UART_Init();
     UART_OutString((unsigned char*)"Running Lab 11");
     while (1) {
@@ -21,7 +21,7 @@ main(void)
 }
 
 void
-PLL_init(void)
+PLL_Init(void)
 {
     SYSCTL_RCC2_R |= SYSCTL_RCC2_USERCC2;
     SYSCTL_RCC2_R |= SYSCTL_RCC2_BYPASS2;
