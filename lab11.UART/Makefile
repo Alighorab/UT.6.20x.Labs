@@ -9,3 +9,9 @@ clean:
 
 update:
 	pio pkg update
+
+compiledb:
+	pio run -t compiledb
+
+serial:
+	picocom -b 115200 /dev/ttyACM0
