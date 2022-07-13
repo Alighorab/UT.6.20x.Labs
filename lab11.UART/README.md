@@ -1,7 +1,9 @@
-### Description
+## Description
 
 - In Lab11 you will learn how to write software that converts numbers into ASCII 
 strings and display the string on the display connected to UART0.
+
+## How to get started
 
 - If you are using linux, follow these steps:
     - Install [`PUTTY`](https://www.putty.org/) terminal.
