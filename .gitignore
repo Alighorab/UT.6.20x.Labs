@@ -4,4 +4,5 @@
 .ccls
 .vim
 .vscode
+.cache
 tags

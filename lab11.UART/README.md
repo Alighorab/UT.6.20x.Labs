@@ -19,3 +19,7 @@ Launchpad is connected to.
     - Install [`PICOCOM`](https://github.com/npat-efault/picocom)
     - Run `picocom -b <baudrate> /dev/tty<COM_port>`
         - e,g. `picocom -b 115200 /dev/ttyACM0`
+
+## A Working Lab 11
+- Here is a [video](https://youtu.be/7bb_MAMmB9g)
+of a working Lab 11.
