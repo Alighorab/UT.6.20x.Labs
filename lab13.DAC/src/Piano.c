@@ -18,7 +18,18 @@
 void
 Piano_Init(void) 
 {
-  
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+    volatile unsigned long delay;
+    SYSCTL_RCGC2_R |= SYSCTL_RCGC2_GPIOE;
+    delay = SYSCTL_RCGC2_R;
+#pragma GCC diagnostic pop
+    GPIO_PORTE_DIR_R &= ~0x0F;    /* make PE3-0 in (built-in button) */
+    GPIO_PORTE_AFSEL_R &= ~0x0F; /* disable alt funct on PE3-0 */
+    GPIO_PORTE_DEN_R |= 0x0F;    /* enable digital I/O on PE3-0 */
+    GPIO_PORTE_PCTL_R = 0x00000000; /* configure PE3-0 as GPIO */
+    GPIO_PORTE_AMSEL_R = 0x00;   /* disable analog functionality on PE3-0 */
+    GPIO_PORTE_DATA_R &= ~0x0F;    /* set PE3-0 to 0 */
 }
 
 /* **************Piano_In********************* */
@@ -30,6 +41,5 @@ Piano_Init(void)
 unsigned long
 Piano_In(void)
 {
-  
-  return 0; /* remove this, replace with input */
+    return (GPIO_PORTE_DATA_R&0x0F);
 }

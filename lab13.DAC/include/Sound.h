@@ -5,6 +5,13 @@
 /* Daniel Valvano, Jonathan Valvano */
 /* December 29, 2014 */
 
+enum SoundNotes {
+    C = 4778,
+    D = 4257,
+    E = 3792,
+    G = 3189,
+};
+
 /* **************Sound_Init********************* */
 /* Initialize Systick periodic interrupts */
 /* Also initializes DAC */
@@ -26,4 +33,9 @@ void Sound_Tone(unsigned long period);
 /* stop outputing to DAC */
 /* Output: none */
 void Sound_Off(void);
+
+/* **************SysTick_Handler*************** */
+/* Interrupt service routine for SysTick timer */
+/* Executed every 12.5ns*period */
+void SysTick_Handler(void);
 

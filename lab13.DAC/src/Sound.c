@@ -10,6 +10,12 @@
 #include "DAC.h"
 #include "tm4c123gh6pm.h"
 
+
+static unsigned long last_period = 0;
+const unsigned char SineWave[32] = 
+                            {8, 9, 10, 11, 12, 13, 14, 15, 15, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 1, 1, 2, 3, 4, 5, 6, 7};
+unsigned int Index = 0;
+
 /* **************Sound_Init********************* */
 /* Initialize Systick periodic interrupts */
 /* Also calls DAC_Init() to initialize DAC */
@@ -18,7 +24,12 @@
 void
 Sound_Init(void)
 {
-  
+    DAC_Init();
+    NVIC_ST_CTRL_R = 0;
+    NVIC_ST_RELOAD_R = 0;
+    NVIC_ST_CURRENT_R = 0;
+    NVIC_SYS_PRI3_R = (NVIC_SYS_PRI3_R & 0x00FFFFFF) | 0x20000000;
+    NVIC_ST_CTRL_R = 0x0007;
 }
 
 /* **************Sound_Tone********************* */
@@ -31,7 +42,10 @@ Sound_Init(void)
 void
 Sound_Tone(unsigned long period)
 {
-/* this routine sets the RELOAD and starts SysTick */
+    if (period != last_period) {
+        NVIC_ST_RELOAD_R = period-1;
+        last_period = period;
+    }
 }
 
 
@@ -41,7 +55,9 @@ Sound_Tone(unsigned long period)
 void
 Sound_Off(void)
 {
- /* this routine stops the sound output */
+    DAC_Out(0);
+    NVIC_ST_RELOAD_R = 0;
+    last_period = 0;
 }
 
 
@@ -50,5 +66,6 @@ Sound_Off(void)
 void
 SysTick_Handler(void)
 {
-   
+    DAC_Out(SineWave[Index]);
+    Index = (Index + 1) & 0x1F;
 }
