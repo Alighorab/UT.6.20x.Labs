@@ -36,3 +36,7 @@ to be able to access the LaunchPad.
 
 - To get a grade for the lab, copy the code to Keil 
 and follow the instructions in the course.
+
+### Certificate
+- You can view my certificate from this [link](https://courses.edx.org/certificates/68808e66c66f405badf10892475d7b83).
+
