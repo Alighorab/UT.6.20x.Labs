@@ -19,4 +19,4 @@
 
 ## A Working Lab 14
 
-- Here is a [video](https://youtu.be/bhtQvQ8QX78) of Lab 14.
+- Here is a [video](https://youtu.be/gcZbiBINREA) of Lab 14.
