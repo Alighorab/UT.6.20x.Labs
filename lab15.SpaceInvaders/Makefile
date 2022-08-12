@@ -1,5 +1,5 @@
 all:
-	pio -f -c vim run
+	pio -f -c vim run -v
 
 upload:
 	pio -f -c vim run --target upload

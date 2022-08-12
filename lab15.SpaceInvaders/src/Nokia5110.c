@@ -283,8 +283,7 @@ Nokia5110_DrawFullImage(const char *ptr)
         lcdwrite(DATA, ptr[i]);
     }
 }
-char Screen[SCREENW * SCREENH /
-8]; // buffer stores the next image to be printed on the screen
+char Screen[SCREENW * SCREENH / 8];
 
 //********Nokia5110_PrintBMP*****************
 // Bitmaps defined above were created for the LM3S1968 or
@@ -339,16 +338,24 @@ Nokia5110_PrintBMP(unsigned char xpos, unsigned char ypos,
     for (i = 1; i <= (width * height / 2); i = i + 1) {
         // the left pixel is in the upper 4 bits
         if (((ptr[j] >> 4) & 0xF) > threshold) {
-            Screen[screenx] |= mask;
+            if (screenx < 504) {
+                Screen[screenx] |= mask;
+            }
         } else {
-            Screen[screenx] &= ~mask;
+            if (screenx < 504) {
+                Screen[screenx] &= ~mask;
+            }
         }
         screenx = screenx + 1;
         // the right pixel is in the lower 4 bits
         if ((ptr[j] & 0xF) > threshold) {
-            Screen[screenx] |= mask;
+            if (screenx < 504) {
+                Screen[screenx] |= mask;
+            }
         } else {
-            Screen[screenx] &= ~mask;
+            if (screenx < 504) {
+                Screen[screenx] &= ~mask;
+            }
         }
         screenx = screenx + 1;
         j = j + 1;

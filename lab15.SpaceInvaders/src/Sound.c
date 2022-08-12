@@ -1,16 +1,21 @@
-// Sound.c
-// Runs on any computer
-// Sound assets based off the original Space Invaders and basic
-// functions to play them.  Copy these functions and constants
-// into your SpaceInvaders.c for ease of sharing your game!
-// Jonathan Valvano
-// November 19, 2012
-
 #include "Sound.h"
 #include "DAC.h"
 #include "Timer0.h"
 
-const unsigned char shoot[4080] = {
+#define SHOOT_SIZE          4080
+#define INVADERKILLED_SIZE  3377
+#define EXPLOSION_SIZE      2000
+#define FASTINVADER1_SIZE   982 
+#define FASTINVADER2_SIZE   1042
+#define FASTINVADER3_SIZE   1054
+#define FASTINVADER4_SIZE   1098
+#define HIGHPITCH_SIZE      1802
+
+const unsigned char *Wave;
+unsigned long Index = 0;
+unsigned long Count = 0;
+
+const unsigned char shoot[] = {
     129, 99,  103, 164, 214, 129, 31,  105, 204, 118, 55,  92,  140, 225, 152,
     61,  84,  154, 184, 101, 75,  129, 209, 135, 47,  94,  125, 207, 166, 72,
     79,  135, 195, 118, 68,  122, 205, 136, 64,  106, 143, 173, 105, 54,  122,
@@ -285,7 +290,7 @@ const unsigned char shoot[4080] = {
     125, 125, 125, 129, 125, 125, 125, 126, 128, 128, 129, 125, 129, 125, 125
 };
 
-const unsigned char invaderkilled[3377] = {
+const unsigned char invaderkilled[] = {
     128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
     128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
     128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
@@ -514,7 +519,7 @@ const unsigned char invaderkilled[3377] = {
     111, 128
 };
 
-const unsigned char explosion[2000] = {
+const unsigned char explosion[] = {
     120, 119, 119, 119, 120, 120, 129, 130, 133, 129, 125, 119, 119, 119, 125,
     128, 135, 137, 133, 123, 109, 99,  91,  92,  101, 116, 135, 140, 143, 130,
     123, 105, 96,  89,  92,  105, 115, 116, 120, 119, 130, 133, 139, 149, 163,
@@ -651,7 +656,7 @@ const unsigned char explosion[2000] = {
     198, 208, 231, 252, 252,
 };
 
-const unsigned char fastinvader1[982] = {
+const unsigned char fastinvader1[] = {
     122, 105, 88,  60,  43,  20,  15,  9,   20,  31,  48,  65,  94,  105, 128,
     144, 167, 184, 195, 218, 224, 235, 240, 246, 252, 255, 252, 252, 252, 246,
     246, 240, 235, 224, 218, 207, 201, 195, 184, 178, 167, 161, 144, 139, 133,
@@ -720,7 +725,7 @@ const unsigned char fastinvader1[982] = {
     111, 116, 111, 116, 111, 111, 111
 };
 
-const unsigned char fastinvader2[1042] = {
+const unsigned char fastinvader2[] = {
     128, 128, 116, 94,  71,  54,  31,  20,  9,   20,  31,  48,  65,  88,  105,
     128, 139, 161, 178, 190, 207, 218, 229, 240, 252, 252, 252, 255, 255, 252,
     252, 252, 240, 240, 229, 224, 212, 207, 201, 184, 184, 173, 161, 150, 144,
@@ -793,7 +798,7 @@ const unsigned char fastinvader2[1042] = {
     116, 111, 111, 111, 111, 111, 116
 };
 
-const unsigned char fastinvader3[1054] = {
+const unsigned char fastinvader3[] = {
     128, 128, 133, 133, 128, 133, 128, 116, 94,  71,  54,  31,  20,  15,  20,
     31,  54,  71,  88,  111, 128, 150, 161, 184, 201, 218, 224, 240, 240, 252,
     255, 255, 255, 255, 255, 255, 252, 246, 246, 235, 229, 218, 212, 201, 195,
@@ -867,7 +872,7 @@ const unsigned char fastinvader3[1054] = {
     144, 139, 139, 139
 };
 
-const unsigned char fastinvader4[1098] = {
+const unsigned char fastinvader4[] = {
     133, 133, 128, 133, 128, 128, 133, 133, 139, 133, 128, 133, 133, 133, 133,
     133, 128, 133, 133, 128, 133, 128, 133, 133, 133, 122, 99,  77,  54,  31,
     20,  9,   15,  26,  43,  60,  88,  99,  128, 139, 161, 184, 201, 218, 229,
@@ -944,7 +949,7 @@ const unsigned char fastinvader4[1098] = {
     111, 105, 116
 };
 
-const unsigned char highpitch[1802] = {
+const unsigned char highpitch[] = {
     255, 162, 102, 101, 46,  7,   47,  59,  111, 150, 160, 176, 163, 226, 220,
     199, 157, 120, 74,  95,  31,  13,  47,  64,  116, 155, 162, 171, 181, 246,
     207, 194, 142, 102, 84,  70,  8,   31,  53,  92,  138, 156, 174, 162, 223,
@@ -1068,10 +1073,6 @@ const unsigned char highpitch[1802] = {
     250, 207
 };
 
-unsigned long Index = 0;
-const unsigned char *Wave;
-unsigned long Count = 0;
-
 void
 Play(void) 
 {
@@ -1080,16 +1081,18 @@ Play(void)
         Index = Index + 1;
         Count = Count - 1;
     } else {
-        NVIC_DIS0_R = 1 << 19; // disable IRQ 19 in NVIC
+        Index = 0;
+        Count = 0;
+        DAC_Out(0);
+        Timer0A_Disable_IRQ();
     }
 }
 
 void
 Sound_Init(void) 
 {
-    DAC_Init(8);                          // initialize simple 4-bit DAC
-                                          //  Timer0B_Init(&Play, 20000); // 4 kHz
-    Timer0_Init(&Play, 80000000 / 11025); // 11.025 kHz
+    DAC_Init();
+    Timer0_Init(Play, 80000000 / 11025);
     Index = 0;
     Count = 0;
 }
@@ -1100,6 +1103,15 @@ Sound_Play(const unsigned char *pt, unsigned long count)
     Wave = pt;
     Index = 0;
     Count = count;
-    NVIC_EN0_R = 1 << 19;      // 9) enable IRQ 19 in NVIC
-    TIMER0_CTL_R = 0x00000001; // 10) enable TIMER0A
+    Timer0A_Enable_IRQ();
+    Timer0A_Enable();
 }
+
+void Sound_Shoot(void) { Sound_Play(shoot, SHOOT_SIZE); }
+void Sound_Killed(void) { Sound_Play(invaderkilled, INVADERKILLED_SIZE); }
+void Sound_Explosion(void) { Sound_Play(explosion, EXPLOSION_SIZE); }
+void Sound_Fastinvader1(void) { Sound_Play(fastinvader1, FASTINVADER1_SIZE); }
+void Sound_Fastinvader2(void) { Sound_Play(fastinvader2, FASTINVADER2_SIZE); }
+void Sound_Fastinvader3(void) { Sound_Play(fastinvader3, FASTINVADER3_SIZE); }
+void Sound_Fastinvader4(void) { Sound_Play(fastinvader4, FASTINVADER4_SIZE); }
+void Sound_Highpitch(void) { Sound_Play(highpitch, HIGHPITCH_SIZE); }
