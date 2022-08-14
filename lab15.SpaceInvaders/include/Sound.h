@@ -14,5 +14,6 @@ void Sound_Fastinvader3(void);
 void Sound_Fastinvader4(void);
 void Sound_Highpitch(void);
 void Play(void);
+void Sound_Off(void);
 
 #endif

@@ -1107,6 +1107,13 @@ Sound_Play(const unsigned char *pt, unsigned long count)
     Timer0A_Enable();
 }
 
+void
+Sound_Off(void) 
+{
+    Timer0A_Disable_IRQ();
+    DAC_Out(0);
+}
+
 void Sound_Shoot(void) { Sound_Play(shoot, SHOOT_SIZE); }
 void Sound_Killed(void) { Sound_Play(invaderkilled, INVADERKILLED_SIZE); }
 void Sound_Explosion(void) { Sound_Play(explosion, EXPLOSION_SIZE); }
