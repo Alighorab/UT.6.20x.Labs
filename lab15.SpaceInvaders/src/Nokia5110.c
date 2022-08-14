@@ -73,7 +73,7 @@ enum typeOfWrite {
 //         message  8-bit code to transmit
 // outputs: none
 // assumes: SSI0 and port A have already been initialized and enabled
-void static
+static void
 lcdwrite(enum typeOfWrite type, char message) 
 {
     if (type == COMMAND) {
