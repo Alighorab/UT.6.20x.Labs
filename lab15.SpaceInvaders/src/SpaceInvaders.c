@@ -3,6 +3,7 @@
 
 Ship playerShip;
 Enemy enemy[MAX_ENEMIES];
+Bunker bunker[MAX_BUNKERS];
 Missile playerMissile[MAX_PMISSILES];
 Missile enemyMissile[MAX_EMISSILES];
 Missile enemySpecialMissile[MAX_SMISSILES];
@@ -17,17 +18,11 @@ main(void)
 }
 
 void
-SysTick_Handler(void)
-{
-    Game_Engine();
-}
-
-void
 Game_Init(void)
 {
     PLL_Init();
     Nokia5110_Init();
-    SysTick_Init();
+    SysTick_Init(Game_Engine);
     Sound_Init();
     ADC0_Init();
     Weapones_Init();
@@ -40,25 +35,41 @@ Game_Init(void)
 void
 Game_CreateObjects(void)
 {
-    int i;
+    int i, newX, newY, offset = 3;
     const unsigned char *frameA[MAX_ENEMIES] = {
-        SmallEnemy10PointA, SmallEnemy20PointA,
-        SmallEnemy30PointA, SmallEnemy10PointA};
+        SmallEnemy10PointA, SmallEnemy20PointA, SmallEnemy30PointA};
     const unsigned char *frameB[MAX_ENEMIES] = {
-        SmallEnemy10PointB, SmallEnemy20PointB,
-        SmallEnemy30PointB, SmallEnemy10PointB};
+        SmallEnemy10PointB, SmallEnemy20PointB, SmallEnemy30PointB};
 
     playerShip.x = Game_GetShipPosition();
     playerShip.y = SCREENH;
     playerShip.image = PlayerShip0;
     playerShip.life = ALIVE;
 
+    newX = 0;
+    newY = 10;
     for (i = 0; i < MAX_ENEMIES; i++) {
-        enemy[i].x = 20 * i;
-        enemy[i].y = 10;
-        enemy[i].image[0] = frameA[i];
-        enemy[i].image[1] = frameB[i];
+        enemy[i].x = newX;
+        enemy[i].y = newY;
+        enemy[i].image[0] = frameA[i % 3];
+        enemy[i].image[1] = frameB[i % 3];
         enemy[i].life = ALIVE;
+        newX += 20;
+        if (i == 3) {
+            newX = offset;
+            newY += 15;
+        }
+    }
+
+    for (i = 0; i < MAX_BUNKERS; i++) {
+        bunker[i].x = 5 + (28 * i);
+        bunker[i].y = 37;
+        bunker[i].image[0] = Bunker0;
+        bunker[i].image[1] = Bunker1;
+        bunker[i].image[2] = Bunker2;
+        bunker[i].image[3] = Bunker3;
+        bunker[i].frame = 0;
+        bunker[i].life = ALIVE;
     }
 
     for (i = 0; i < MAX_PMISSILES; i++) {
@@ -88,6 +99,10 @@ Game_DrawObjects(void)
         Nokia5110_PrintBMP(enemy[i].x, enemy[i].y, 
                     enemy[i].image[enemy[i].frame], 0);
     }
+    for (i = 0; i < MAX_BUNKERS; i++) {
+        Nokia5110_PrintBMP(bunker[i].x, bunker[i].y, 
+                    bunker[i].image[bunker[i].frame], 0);
+    }
     Nokia5110_DisplayBuffer();
 }
 
@@ -110,13 +125,14 @@ Game_Engine(void)
     playerShip.x = Game_GetShipPosition();
     Game_CatchEnemy();
     Game_CatchPlayer();
+    Game_CatchBunker();
     Game_MoveMissiles();
 
-    if (Weapones_GetButtons() == 0x01 && playerShip.life == ALIVE) {
+    if (Weapones_GetButtons() == FIRE) {
         Game_FireMissile(1);
     }
 
-    if (Weapones_GetButtons() == 0x02 && playerShip.life == ALIVE) {
+    if (Weapones_GetButtons() == SPECIAL_FIRE) {
         Game_FireSpecialMissile(1);
     }
     
@@ -180,6 +196,13 @@ Game_Update(void)
         }
     }
 
+    for (i = 0; i < MAX_BUNKERS; i++) {
+        if (bunker[i].life == ALIVE) {
+            Nokia5110_PrintBMP(bunker[i].x, bunker[i].y,
+                    bunker[i].image[bunker[i].frame], 0);
+        }
+    }
+
     Nokia5110_DisplayBuffer();
 
     if (playerShip.life == DEAD) {
@@ -216,7 +239,7 @@ Game_FireMissile(int player)
             }
         }
     } else {
-        enemyRand = SRand(ADC0_In()) % 4;
+        enemyRand = SRand(ADC0_In()) % MAX_ENEMIES;
         for (i = 0; i < MAX_EMISSILES; i++) {
             if (enemyMissile[i].life == DEAD && 
                     enemy[enemyRand].life == ALIVE) {
@@ -247,7 +270,7 @@ Game_FireSpecialMissile(int player)
             }
         }
     } else {
-        enemyRand = SRand(ADC0_In()) % 4;
+        enemyRand = SRand(ADC0_In()) % MAX_ENEMIES;
         for (i = 0; i < MAX_SMISSILES; i++) {
             if (enemySpecialMissile[i].life == DEAD && 
                     enemy[enemyRand].life == ALIVE) {
@@ -267,7 +290,7 @@ Game_MoveMissiles(void)
     int i;
     for (i = 0; i < MAX_PMISSILES; i++) {
         if (playerMissile[i].life == ALIVE) {
-            playerMissile[i].y -= 2;
+            playerMissile[i].y -= 1;
             if (playerMissile[i].y < MISSILEH) {
                 playerMissile[i].life = DEAD;
             }
@@ -276,7 +299,7 @@ Game_MoveMissiles(void)
 
     for (i = 0; i < MAX_EMISSILES; i++) {
         if (enemyMissile[i].life == ALIVE) {
-            enemyMissile[i].y += 2;
+            enemyMissile[i].y += 1;
             if (enemyMissile[i].y > SCREENH) {
                 enemyMissile[i].life = DEAD;
             }
@@ -384,6 +407,51 @@ Game_CatchPlayer(void)
 }
 
 void
+Game_CatchBunker(void)
+{
+    int i;
+    for (i = 0; i < MAX_EMISSILES; i++) {
+        if (enemyMissile[i].life == ALIVE) {
+            int j;
+            for (j = 0; j < MAX_BUNKERS; j++) {
+                if (bunker[j].life == ALIVE &&
+                        enemyMissile[i].y >= bunker[j].y - BUNKERH &&
+                        enemyMissile[i].y <= bunker[j].y &&
+                        enemyMissile[i].x >= bunker[j].x + 2 &&
+                        enemyMissile[i].x <= bunker[j].x + BUNKERW - 2) {
+                    enemyMissile[i].life = DEAD;
+                    bunker[j].frame++;
+                    if (bunker[i].frame > 3) {
+                        bunker[j].life = DEAD;
+                    }
+                    Sound_Explosion();
+                }
+            }
+        }
+    }
+    
+    for (i = 0; i < MAX_SMISSILES; i++) {
+        if (enemySpecialMissile[i].life == ALIVE) {
+            int j;
+            for (j = 0; j < MAX_BUNKERS; j++) {
+                if (bunker[j].life == ALIVE &&
+                        enemySpecialMissile[i].y >= bunker[j].y - BUNKERH &&
+                        enemySpecialMissile[i].y <= bunker[j].y &&
+                        enemySpecialMissile[i].x >= bunker[j].x + 2 &&
+                        enemySpecialMissile[i].x <= bunker[j].x + BUNKERW - 2) {
+                    enemySpecialMissile[i].life = DEAD;
+                    bunker[j].frame++;
+                    if (bunker[i].frame > 3) {
+                        bunker[j].life = DEAD;
+                    }
+                    Sound_Explosion();
+                }
+            }
+        }
+    }
+}
+
+void
 Game_Over(void)
 {
     Delay(10);
@@ -399,11 +467,13 @@ Game_Over(void)
     Nokia5110_SetCursor(0, 4);
     Nokia5110_OutString(" Restart");
     
+    DisableInterrupts();
     while (!Weapones_GetButtons()) {
         ; 
     }
     Delay(5);
     Game_CreateObjects();
+    EnableInterrupts();
 }
 
 void
@@ -420,10 +490,12 @@ Game_Win(void)
     Nokia5110_SetCursor(0, 3);
     Nokia5110_OutString(" Restart");
     
+    DisableInterrupts();
     while (!Weapones_GetButtons()) {
         ; 
     }
     Delay(5);
     Game_CreateObjects();
+    EnableInterrupts();
 }
 

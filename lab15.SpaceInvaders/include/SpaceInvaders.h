@@ -10,10 +10,15 @@
 #define ALIVE 1
 #define DEAD  0
 
-#define MAX_ENEMIES 4
+#define FIRE 0x01
+#define SPECIAL_FIRE 0x02
+
+
+#define MAX_ENEMIES 8
 #define MAX_PMISSILES 20
 #define MAX_EMISSILES 10
 #define MAX_SMISSILES 2
+#define MAX_BUNKERS 3
 
 #define HALF_SECOND 15
 #define ONE_SECOND  30
@@ -33,12 +38,13 @@ typedef struct Enemy {
     long life;
 } Enemy;
 
-typedef struct Buncker {
+typedef struct Bunker {
     unsigned long x;
     unsigned long y;
     const unsigned char *image[4];
     unsigned long frame;
-} Buncker;
+    long life;
+} Bunker;
 
 typedef struct Missile {
     unsigned long x;
@@ -63,5 +69,6 @@ void Game_FireSpecialMissile(int player);
 void Game_MoveMissiles(void);
 void Game_CatchEnemy(void);
 void Game_CatchPlayer(void);
+void Game_CatchBunker(void);
 void Game_Over(void);
 void Game_Win(void);
